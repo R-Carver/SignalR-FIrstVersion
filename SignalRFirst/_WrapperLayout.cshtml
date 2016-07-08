@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Contract Management</title>
+    @Styles.Render("~/Content/css") @*Keep order*@
+    @Styles.Render("~/Content/css/responsive.css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link id="light_css" rel="stylesheet" type="text/css" href="~/Content/css/templateLight.css" title="light" disabled="false" />
+    <link id="dark_css" rel="alternate stylesheet" type="text/css" href="~/Content/css/templateDark.css" title="dark" disabled="true" />
+</head>
+<body>
+    @using Microsoft.AspNet.Identity
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <div id="sidebar">
+                <nav id="sidebar-menu" class="menu-vertical">
+                    <div id="menulinkbox">
+                        <ul class="menu">
+                            <li><a href="javascript:switchSidebar()" id="sidebar-menu-item" class="material-icons md-24">menu</a></li>
+                            <li class="hover-class">@Html.ActionLink("Startseite", "Index", "Home")</li>
+                            <li class="hover-class"><a href="@Url.Action("Index", "Contract")"><i class="material-icons">library_books</i><span>  Verträge</span></a></li>
+                            <li class="hover-class"><a href="@Url.Action("Index", "Home")"><i class="material-icons">event</i><span>  Termine</span></a></li>
+                            @{
+                                if (this.User.IsInRole("Dispatcher"))
+                                {
+                                    <li class="hover-class"><a href="@Url.Action("Index", "Dispatcher")"><i class="material-icons">person_outline</i><span>  Dispatcher</span></a></li>
+                                }
+                            }
+                            @{
+                                if (this.User.IsInRole("Coordinator"))
+                                {
+                                    <li class="hover-class"><a href="@Url.Action("Index", "Coordinator")"><i class="material-icons">person</i><span>  Koordiantor</span></a></li>
+                                }
+                            }
+                            @{
+                                if (this.User.IsInRole("Administrator"))
+                                {
+                                    <li class="hover-class"><a href="@Url.Action("Index", "Administration")"><i class="material-icons">supervisor_account</i><span>  Administration</span></a></li>
+                                }
+                            }
+                            <li class="hover-class"><a href="@Url.Action("About", "Home")"><i class="material-icons">info_outline</i><span>  Info</span></a></li>
+                            <li class="hover-class"><a href="@Url.Action("Contact", "Home")"><i class="material-icons">contact_mail</i><span> Kontakt</span></a></li>
+                            @if (Request.IsAuthenticated)
+                            {
+                                <li class="hover-class">
+                                    <a href="@Url.Action("Index", "Manage")" title="Manage" , id="loginUser"><i class="material-icons">account_circle</i>@Html.Raw("  " + User.Identity.GetUserName())</a>
+                                    @*@Html.ActionLink(User.Identity.GetUserName(), "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage", id = "loginUser" })*@
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+
+                    <style>
+                        #messengerBox{
+                            position:absolute;
+                            bottom:6%;
+                            height:400px;
+                            width:80%;
+                            margin-left: 20px;
+                            padding:5px 5px 5px 5px;
+                            font-size:small;
+                            border: solid orange;
+                        }
+                        #messengerBox p{
+                            padding:0;
+                            margin:0;
+                            text-indent:0;
+                        }
+
+                        #messengerBox > p{
+                            
+                            text-align:center;
+                            font-size:large;
+                            font-weight:700;
+                            margin-bottom:10px;
+                        }
+                    </style>
+                    
+                    <div id="messengerBox">
+                        <p>Aktuelles</p>
+                        @Html.Partial("MessengerContentPartial")
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div id="container">
+            <div id="container-head">
+                <div id="breadcrumb">
+                    <a href="#" title="Breadcrumb">
+                        → @HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString(), @HttpContext.Current.Request.RequestContext.RouteData.Values["action"].ToString()
+                    </a>
+                </div>
+                <div id="logout-area">
+                    <ul>
+                        <li id="loginUserTopLi">
+                            <button ="Manage" id="loginUserTop" onclick="hideShowUserOptions();">@User.Identity.GetUserName()</button>
+                            <font> |</font>
+                        </li>
+                        <li>
+                            <a href="javascript:updateStyleSheet()" title="Color-Mode" class="material-icons md-22">invert_colors</a>
+                            <font>|</font>
+                        </li>
+                        <li>
+                            @Html.ActionLink("en", "Contact", "Home", new { title = "Language" })
+                            <font>|</font>
+                        </li>
+                        <li>
+                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logout-form", @class = "iconStyle", title = "Logout" }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <a href="javascript:document.getElementById('logout-form').submit()" class="iconStyle" id="logout-item">Log Out</a>
+
+                            }
+                            @*@Html.ActionLink("Logout", "LogOff", "Account", new { id = "logout-item", @class = "iconStyle" })*@
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div id="sectionwrapper">
+                <section id="content">
+                    @RenderBody()
+                </section>
+                <div id="heightSetter">
+                </div>
+            </div>
+            <footer>
+                © Contract Manager Uni Augsburg
+            </footer>
+        </div>
+    </div>
+    <div class="popWindow" id="userOptions" style="display:none">
+        <span>
+            Sie sind angemeldet als:
+        </span>
+        @User.Identity.GetUserName()
+        @Html.ActionLink("Account bearbeiten", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/jquery-ui")
+    @Scripts.Render("~/Scripts/Layout/style-switcher.js")
+    @Scripts.Render("~/Scripts/Layout/datepicker.js")
+    @Scripts.Render("~/Scripts/Layout/animation.js")
+    @RenderSection("scripts", required: false)
+
+    <script src="/Scripts/jquery.signalR-2.2.0.js"></script>
+    <script src="~/signalr/hubs"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#heightSetter").height($("#content").outerHeight()*1.1);
+            //console.log("Outer " + $("#content").outerHeight());
+            //console.log($("#heightSetter").height());
+        });
+
+        function hideShowUserOptions(){
+            if($("#userOptions").is(":visible")){
+                $("#userOptions").hide();
+            } else {
+                $("#userOptions").show();
+            }
+        }
+
+        //SignalR Test --------------------------------------------------------------
+
+
+        
+
+        $(function () {
+
+            var ticker = $.connection.MessengerHub;
+
+            ticker.client.showNewContractMessage = function (dateCreated, contractName) {
+
+                var table = document.getElementById("notificationsTable");
+                var row = table.insertRow(-1);
+                var cell = row.insertCell(0);
+                
+
+                cell.innerHTML = "<p>" + dateCreated + "</p>" + "<p>" + contractName + "</p>";
+                
+            }
+
+            $.connection.hub.start().done();
+        });
+
+        $(function () {
+
+            var ticker = $.connection.MessengerHub;
+
+            ticker.client.refreshBox = function () {
+
+                $("#notificationsTable tr").remove();
+            }
+
+            $.connection.hub.start().done();
+        });
+
+        //calls the Server Function to load the notifications on pageload
+        window.onload = function () {
+
+            var ticker = $.connection.MessengerHub;
+
+            $("#notificationsTable tr").remove();
+            $.connection.hub.start().done(function () {
+
+                 ticker.server.showNewContractMessage();
+            });
+        };
+
+
+
+        //SignalR Test ----------------------------------------------------------ENDE
+
+
+    </script>
+</body>
+</html>
