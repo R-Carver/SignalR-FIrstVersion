@@ -13,15 +13,12 @@ namespace WebApplication1.Utilities.SignalR
     {
         private readonly static Lazy<Messenger> _instance = new Lazy<Messenger>(() => new Messenger(GlobalHost.ConnectionManager.GetHubContext<MessengerHub>().Clients));
 
-        private readonly TimeSpan _updateInterval = TimeSpan.FromMilliseconds(700);
-
         //The information that is needed for displaying in the messenger
         private readonly ConcurrentDictionary<DateTime, string> _contractInfo = new ConcurrentDictionary<DateTime, string>();
 
         private Messenger(IHubConnectionContext<dynamic> clients)
         {
             Clients = clients;
-
         }
 
         public static Messenger Instance
@@ -44,9 +41,11 @@ namespace WebApplication1.Utilities.SignalR
         {
             Clients.All.refreshBox();
             foreach (var contract in _contractInfo)
-            {   
+            {
+                string formatedDate = contract.Key.ToString("f");
+
                 //contract.Key is the Datetime, Value is the name
-                this.BroadCastNewContract(contract.Key.ToString(), contract.Value);
+                this.BroadCastNewContract(formatedDate, contract.Value);
             }
         }
 
